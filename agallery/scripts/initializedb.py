@@ -22,7 +22,7 @@ from agallery.models.auth import (  # noqa
     Permission, User, UserGroup
 )
 from agallery.models.gallery import (  # noqa
-    likes_table, Photo
+    Likes, Photo
 )
 
 
@@ -96,5 +96,14 @@ def main(argv=sys.argv):
             email='somegirl@some.mail',
             password='123456',
             profiles=set(['admin'])
+        )
+        dbsession.add(model)
+
+        model = User(
+            login='normaluser',
+            name='Normal User',
+            email='normaluser@some.mail',
+            password='123456',
+            profiles=set(['normal'])
         )
         dbsession.add(model)

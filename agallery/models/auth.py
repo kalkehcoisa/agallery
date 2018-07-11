@@ -10,7 +10,7 @@ from sqlalchemy_utils import PasswordType
 
 from agallery.models import DBSession, types
 from agallery.models.meta import Base
-from agallery.models.gallery import likes_table
+from agallery.models.gallery import Likes
 
 
 class User(Base):
@@ -34,8 +34,9 @@ class User(Base):
 
     likes = relationship(
         'gallery.Photo',
-        secondary=likes_table,
-        back_populates="likes"
+        secondary=Likes.__table__,
+        back_populates="likes",
+        collection_class=set
     )
 
     def as_dict(self):
@@ -100,17 +101,12 @@ def get_login(request):
     return unauthenticated_userid(request)
 
 
-# @cache_region('uma_hora', 'dados_user')
-def do_get_user(userid):
-    user = DBSession.query(User)\
-        .filter(User.login == userid).first()
-    return user.as_dict() if user else {}
-
-
 def get_user(request):
     userid = request.login
     if userid is not None:
-        userdict = do_get_user(userid)
+        user = DBSession.query(User)\
+            .filter(User.login == userid).first()
+        userdict = user.as_dict() if user else {}
         if len(userdict) > 0:
             return userdict
     return {}

@@ -21,7 +21,7 @@
     <script src="{{request.static_url('agallery:static/js/bootstrap.js')}}"></script>
     {% block extrajs %}{% endblock extrajs %}
   </head>
-  <body style="padding-top: 50px;">
+  <body>
     <nav class="navbar navbar-toggleable-md navbar-inverse fixed-top bg-inverse">
       <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -29,58 +29,66 @@
       <a class="navbar-brand" href="{{request.route_url('home')}}">Home</a>
       <div class="collapse navbar-collapse" id="navbarCollapse">
         <ul class="navbar-nav mr-auto">
-          <li class="nav-item {% if page == 'gallery' %}active{% endif %}">
-            <a class="nav-link" href="{{request.route_url('gallery')}}">Gallery <span class="sr-only">(current)</span></a>
+          <li class="nav-item">
+            <a class="nav-link" href="{{request.route_url('about')}}">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{request.route_url('gallery')}}">Gallery</a>
           </li>
           {% if request.has_permission('image_aprove') %}
-          <li class="nav-item {% if page == 'gallery_approve' %}active{% endif %}">
-            <a class="nav-link" href="{{request.route_url('gallery_approve')}}">Approve photos<span class="sr-only">(current)</span></a>
+          <li class="nav-item">
+            <a class="nav-link" href="{{request.route_url('gallery_approve')}}">Approve photos</a>
           </li>
           {% endif %}
-          <li class="nav-item {% if page == 'login' %}active{% endif %}"">
-            <a class="nav-link" href="{{request.route_url('auth_login')}}">Login</a>
+          <li class="nav-item"">
+            {% if request.user %}
+            <a class="nav-link" href="{{request.route_url('auth_logout')}}">
+              Logout
+            </a>
+            {% else %}
+            <a class="nav-link" href="{{request.route_url('auth_login')}}">
+              Login
+            </a>
+            {% endif %}
           </li>
         </ul>
       </div>
     </nav>
-    
-    <div class="whole-wrapper">
-      <div class="container">
+    <div class="container">
 
-        {% if request.peek_flash() %}
-        <div class="row">
-          <div class="col-md-2"></div>
-          <div class="col-md-8">
-            <div class="messages-container">
-              {% for message in request.list_flash() %}
-              <div class="alert alert-{{message.split(';;')[0]}}">
-                    {{message.split(";;")[1]}}
-                    <a class="close" href="#">×</a>
-              </div>
-              {% endfor %}
+      {% if request.peek_flash() %}
+      <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-8">
+          <div class="messages-container">
+            {% for message in request.list_flash() %}
+            <div class="alert alert-{{message.split(';;')[0]}}">
+                  {{message.split(";;")[1]}}
+                  <a class="close" href="#">×</a>
             </div>
-          </div>
-          <div class="col-md-2"></div>
-        </div>
-        {% endif %}
-
-        <div class="row">
-          <div class="col-md-2">
-            {% block menu %}
-            {% endblock menu %}
-          </div>
-          <div class="col-md-10">
-            <div class="jumbotron rounded">
-            {% block content %}
-                <p>No content</p>
-            {% endblock content %}
-            </div>
+            {% endfor %}
           </div>
         </div>
-        <div class="row">
-          <div class="copyright">
-            Copymiddle &sum; Some Project
+        <div class="col-md-2"></div>
+      </div>
+      {% endif %}
+
+      <div class="row">
+        <div class="col-md-2">
+          {% block menu %}
+          {% endblock menu %}
+        </div>
+        <div class="col-md-10">
+          <div class="jumbotron rounded">
+          {% block content %}
+              <p>No content</p>
+          {% endblock content %}
           </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="copyright">
+          Copymiddle &sum; Some Project
         </div>
       </div>
     </div>

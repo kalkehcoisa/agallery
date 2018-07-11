@@ -1,0 +1,46 @@
+{% extends "../base.html" %}
+
+{% block content %}
+<div class="row">
+  {% for photo in photos %}
+  <div class="col-md-4">
+    <div class="card mb-4 box-shadow">
+      <img class="card-img-top" alt="Photo [100%x225]" style="height: 225px; width: 100%; display: block;" src="{{photo.url}}" data-holder-rendered="true">
+      <div class="card-body">
+        <p class="card-text"></p>
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="btn-group">
+            <a class="approve_photo btn btn-sm btn-outline-primary" href="#" data-href="{{request.route_url('gallery_approve')}}" data-uid="{{photo.uid}}">Approve</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock content %}
+
+{% block footerjs %}
+<script>
+$(function () {
+  $('.approve_photo').click(function(event) {
+    var elem = $(event.target);
+    var uid = elem.data('uid');
+    var href = elem.data('href');
+
+    $.post(href, data={'uid': uid}, function(data) {
+      if(data.error) {
+        alert(data.error);
+      } else {
+        elem.parent().html('<h3>Approved</h3>');
+      }
+    })
+    .fail(function() {
+      alert('Error trying to approve the photo. Try again later.');
+    });
+
+    event.preventDefault();
+  });
+});
+</script>
+{% endblock footerjs %}
