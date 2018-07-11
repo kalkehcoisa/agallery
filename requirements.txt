@@ -1,4 +1,5 @@
 boto3==1.7.54
+passlib==1.7.1
 plaster_pastedeploy==0.5
 pyramid==1.9.2
 pyramid_debugtoolbar==4.4
