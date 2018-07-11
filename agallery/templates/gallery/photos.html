@@ -6,7 +6,16 @@
 
 {% block content %}
 {% if request.has_permission('image_send') %}
-<div class="jumbotron p-3 p-md-5 text-white rounded bg-inverse">
+<div class="row">
+    <div class="col-md-8">
+      <button class="btn btn-primary collapsed" type="button" data-toggle="collapse" data-target="#sendImages" aria-expanded="false" aria-controls="sendImages">
+        Send photos
+      </button>
+    </div>
+    <div class="col-md-2"></div>
+    <br/><br/>
+</div>
+<div id="sendImages" class="jumbotron p-3 p-md-5 text-white rounded bg-inverse collapse">
   <div class="col-md-6 px-0">
     <h1 class="display-4 font-italic">Upload photos</h1>
     <p class="lead my-3">
@@ -40,10 +49,13 @@
         <p class="card-text"></p>
         <div class="d-flex justify-content-between align-items-center">
           <div class="btn-group">
-            <a href="#" class="btn btn-sm btn-outline-secondary">Approve</a>
-            <a href="#" class="btn btn-sm btn-outline-secondary">Like</a>
+            <a href="#" data-like="{{request.route_url('gallery_like')}}" data-dislike="{{request.route_url('gallery_dislike')}}" data-uid="{{photo.uid}}" class="like_photo btn btn-sm btn-outline-primary">
+              {% if request.user.login not in photo.likes_ids %}Like{%else%}Dislike{% endif %}
+            </a>
           </div>
-          <small class="text-muted">{{photo.likes_count}} likes</small>
+          <small class="text-muted">
+            <span id="{{photo.uid}}_likes">{{photo.likes_count}}</span> likes
+          </small>
         </div>
       </div>
     </div>
@@ -69,16 +81,55 @@ $(function () {
         dataType: 'json',
         done: function (e, data) {
             $.each(data.result.files, function (index, file) {
-              console.log(file);
                 $('<a href="'+file.url+'"/>').text(file.name).appendTo('#files');
             });
         },
         progressall: function (e, data) {
             var progress = parseInt(data.loaded / data.total * 100, 10);
             $('#progress .progress-bar').css('width', progress + '%');
+        },
+        stop: function (e) {
+          alert('Upload finished!\nWait for the photos to be approved to see them here.');
         }
     }).prop('disabled', !$.support.fileInput)
         .parent().addClass($.support.fileInput ? undefined : 'disabled');
+
+
+  $('.like_photo').click(function(event) {
+    var elem = $(event.target);
+    var uid = elem.data('uid');
+    var like = elem.data('like');
+    var dislike = elem.data('dislike');
+
+    if(elem.text().replace(/^\s+|\s+$/g, '') === 'Like') {
+      var href = like;
+    } else {
+      var href = dislike;
+    }
+
+    $.post(href, {'uid': uid}, function(data) {
+      if(data.error) {
+        alert(data.error);
+      } else {
+        if(elem.text().replace(/^\s+|\s+$/g, '') === 'Dislike') {
+          var add = -1;
+          elem.text('Like');
+        } else {
+          var add = 1;
+          elem.text('Dislike');
+        }
+
+        var likes = parseInt($('#' + uid + '_likes').text()) + add;
+        $('#' + uid + '_likes').text(likes);
+      }
+    })
+    .fail(function() {
+      alert('Error trying to like the photo. Try again later.');
+    });
+
+    event.preventDefault();
+  });
+
 });
 </script>
 {% endblock footerjs %}

@@ -14,3 +14,15 @@ Details of the solution
 - The code needs to be hosted in your preferred code repository
 - You need to host the application in a server of your choice and give us a link to access and use the application
 - You should provide sufficient evidence that your solution is complete by, as a minimum, indicating that it works correctly against the requirements
+
+
+## Possible improvements
+1. Implement tests
+2. Add pagination to the gallery views
+3. Add design (instead of just plain bootstrap in a hurry)
+4. The design of the image uploader could be better.
+5. Add "zoom" to the images on click (a modal facebook like or a page only for them)
+6. Improve the approve link error handling.
+7. Add cache to views/calls around.
+8. Add a crud page to manage users.
+9. Improve the like/dislike performance.

@@ -6,6 +6,7 @@ import boto3
 from pyramid.view import view_config
 from sqlalchemy.sql.expression import false, true
 
+from agallery.models.auth import User
 from agallery.models.gallery import Photo
 
 ACCEPT_FILE_TYPES = re.compile('image/(gif|p?jpeg|(x-)?png)')
@@ -74,6 +75,7 @@ class GalleryViews:
         route_name='gallery')
     def list_active_photos(self):
         photos = self.request.dbsession.query(Photo) \
+            .filter(Photo.approved == true()) \
             .order_by(Photo.likes_count.desc())
         return {'photos': photos}
 
@@ -121,8 +123,76 @@ class GalleryApproveViews:
         renderer='agallery:templates/gallery/approve.html',
         request_method='GET',
         route_name='gallery_approve')
-    def list_active_photos(self):
+    def list_photos_to_approve(self):
         photos = self.request.dbsession.query(Photo).filter(
             Photo.approved == false()
         ).order_by(Photo.likes_count.desc())
         return {'photos': photos}
+
+    @view_config(
+        permissions=('image_approve',),
+        renderer='json',
+        request_method='POST',
+        route_name='gallery_approve')
+    def approve_photo(self):
+        if 'uid' not in self.request.POST:
+            return {'status': False, 'error': 'Missing photo uid.'}
+
+        uid = self.request.POST['uid']
+        photo = self.request.dbsession.query(Photo) \
+            .filter(Photo.uid == uid).first()
+
+        if photo is None:
+            return {'status': False, 'error': 'Photo not found'}
+
+        photo.approved = True
+        self.request.dbsession.merge(photo)
+        return {'status': True, 'photo': photo.uid}
+
+    @view_config(
+        permissions=('login',),
+        renderer='json',
+        request_method='POST',
+        route_name='gallery_like')
+    def like_photo(self):
+        if 'uid' not in self.request.POST:
+            return {'status': False, 'error': 'Missing photo uid.'}
+
+        uid = self.request.POST['uid']
+        photo = self.request.dbsession.query(Photo) \
+            .filter(Photo.uid == uid).first()
+        if photo is None:
+            return {'status': False, 'error': 'Photo not found'}
+
+        user = self.request.dbsession.query(User)\
+            .filter(User.login == self.request.login).first()
+
+        photo.likes.add(user)
+        photo.likes_count = len(photo.likes)
+        self.request.dbsession.merge(photo)
+        self.request.dbsession.flush()
+        return {'status': True, 'photo': photo.uid}
+
+    @view_config(
+        permissions=('login',),
+        renderer='json',
+        request_method='POST',
+        route_name='gallery_dislike')
+    def dislike_photo(self):
+        if 'uid' not in self.request.POST:
+            return {'status': False, 'error': 'Missing photo uid.'}
+
+        uid = self.request.POST['uid']
+        photo = self.request.dbsession.query(Photo) \
+            .filter(Photo.uid == uid).first()
+        if photo is None:
+            return {'status': False, 'error': 'Photo not found'}
+
+        user = self.request.dbsession.query(User)\
+            .filter(User.login == self.request.login).first()
+
+        photo.likes.remove(user)
+        photo.likes_count = len(photo.likes)
+        self.request.dbsession.merge(photo)
+        self.request.dbsession.flush()
+        return {'status': True, 'photo': photo.uid}

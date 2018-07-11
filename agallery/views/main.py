@@ -10,7 +10,15 @@ from pyramid.view import (
     renderer='agallery:templates/home.html'
 )
 def home(request):
-    return {'one': '', 'project': 'Anchor Gallery'}
+    return {}
+
+
+@view_config(
+    route_name='about',
+    renderer='agallery:templates/about.html'
+)
+def about(request):
+    return {}
 
 
 @notfound_view_config(renderer='../templates/404.html')

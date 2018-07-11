@@ -1,8 +1,4 @@
-from datetime import datetime, timedelta
-import uuid
-
 from pyramid.httpexceptions import HTTPFound
-from pyramid.renderers import render
 from pyramid.security import (
     forget,
     remember
@@ -35,6 +31,16 @@ def login(request):
         'form': form,
         'action': request.route_url('auth_login')
     }
+
+
+@view_config(
+    permissions=('login',),
+    route_name='auth_logout',
+)
+def logout(request):
+    headers = forget(request)
+    location = '/'
+    return HTTPFound(location=location, headers=headers)
 
 
 def login_user(request, login, passwd):
