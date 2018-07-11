@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form method="POST" action="{{action}}">
+    {% for field in form %}
+    <div class="row {{field.type}}">
+        <div class="col-md-2">
+            {% if field.type not in ['SubmitField'] %}
+            {{ field.label }}:
+            {% endif %}
+        </div>
+        <div class="col-md-10">
+            {{ field(class="css_class") }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+        {% if field.errors %}
+            <ul class="errors">{% for error in field.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+        {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</form>
+{% endblock content %}

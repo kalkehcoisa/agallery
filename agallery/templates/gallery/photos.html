@@ -1,0 +1,84 @@
+{% extends "../base.html" %}
+
+{% block extracss %}
+<link rel="stylesheet" href="{{request.static_url('agallery:static/css/jquery.fileupload.css')}}">
+{% endblock extracss %}
+
+{% block content %}
+{% if request.has_permission('image_send') %}
+<div class="jumbotron p-3 p-md-5 text-white rounded bg-inverse">
+  <div class="col-md-6 px-0">
+    <h1 class="display-4 font-italic">Upload photos</h1>
+    <p class="lead my-3">
+      <span class="btn btn-success fileinput-button">
+        <i class="glyphicon glyphicon-plus"></i>
+        <span>Select photos to upload...</span>
+        <!-- The file input field used as target for the file upload widget -->
+        <input id="fileupload" type="file" name="files[]" multiple>
+      </span>
+    </p>
+    <p class="lead mb-0">
+      <br>
+      <br>
+      <!-- The global progress bar -->
+      <div id="progress" class="progress bg-inverse">
+          <div class="progress-bar progress-bar-success"></div>
+      </div>
+      <!-- The container for the uploaded files -->
+      <div id="files" class="files"></div>
+    </p>
+  </div>
+</div>
+{% endif %}
+
+<div class="row">
+  {% for photo in photos %}
+  <div class="col-md-4">
+    <div class="card mb-4 box-shadow">
+      <img class="card-img-top" alt="Photo [100%x225]" style="height: 225px; width: 100%; display: block;" src="{{photo.url}}" data-holder-rendered="true">
+      <div class="card-body">
+        <p class="card-text"></p>
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="btn-group">
+            <a href="#" class="btn btn-sm btn-outline-secondary">Approve</a>
+            <a href="#" class="btn btn-sm btn-outline-secondary">Like</a>
+          </div>
+          <small class="text-muted">{{photo.likes_count}} likes</small>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock content %}
+
+{% block footerjs %}
+<!-- The jQuery UI widget factory, can be omitted if jQuery UI is already included -->
+<script src="{{request.static_url('agallery:static/js/vendor/jquery.ui.widget.js')}}"></script>
+<!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
+<script src="{{request.static_url('agallery:static/js/jquery.iframe-transport.js')}}"></script>
+<!-- The basic File Upload plugin -->
+<script src="{{request.static_url('agallery:static/js/jquery.fileupload.js')}}"></script>
+<script>
+$(function () {
+    'use strict';
+    // Change this to the location of your server-side upload handler:
+    var url = '{{request.route_url('gallery')}}';
+    $('#fileupload').fileupload({
+        url: url,
+        dataType: 'json',
+        done: function (e, data) {
+            $.each(data.result.files, function (index, file) {
+              console.log(file);
+                $('<a href="'+file.url+'"/>').text(file.name).appendTo('#files');
+            });
+        },
+        progressall: function (e, data) {
+            var progress = parseInt(data.loaded / data.total * 100, 10);
+            $('#progress .progress-bar').css('width', progress + '%');
+        }
+    }).prop('disabled', !$.support.fileInput)
+        .parent().addClass($.support.fileInput ? undefined : 'disabled');
+});
+</script>
+{% endblock footerjs %}

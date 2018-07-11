@@ -1,0 +1,3 @@
+[run]
+source = agallery
+omit = agallery/test*
