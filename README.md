@@ -26,3 +26,4 @@ Details of the solution
 7. Add cache to views/calls around.
 8. Add a crud page to manage users.
 9. Improve the like/dislike performance.
+10. Delete the photos on s3 as their references are deleted on the database.
