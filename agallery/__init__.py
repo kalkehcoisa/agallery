@@ -1,15 +1,13 @@
 import os
 
-from sqlalchemy import engine_from_config
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.httpexceptions import HTTPFound
 from pyramid.request import Request
-
 from pyramid_nacl_session import EncryptedCookieSessionFactory
 
-from agallery.models import DBSession
+from agallery.models import DBSession, get_engine
 from agallery.models import auth as m_auth
 from agallery.models.meta import Base
 
@@ -49,13 +47,10 @@ class PermissionsPredicate(object):
 
 
 class CustomRequest(Request):
-    def flash(self, msg, queue=''):
-        key = u'_flsh:%s_' % queue
+    def flash(self, msg, queue='', allow_duplicate=True):
         msg = 'info;;' + msg if ';;' not in msg else msg
         # success warning danger info
-        if key not in self.session:
-            self.session[key] = []
-        self.session[key].append(msg)
+        self.session.flash(msg, queue, allow_duplicate)
 
     def peek_flash(self, queue=''):
         return self.session.peek_flash(queue)
@@ -64,7 +59,7 @@ class CustomRequest(Request):
         return self.session.pop_flash()
 
     def list_flash(self, queue='', clear=True):
-        key = u'_flsh:%s_' % queue
+        key = u'_f_%s' % queue
         data = self.session[key][:]
         self.session[key] = []
         return data
@@ -91,7 +86,7 @@ def main(global_config, **settings):
     config = Configurator(settings=settings)
 
     # database
-    engine = engine_from_config(settings, 'sqlalchemy.')
+    engine = get_engine(settings)
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
 

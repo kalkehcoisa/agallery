@@ -1,6 +1,10 @@
-from sqlalchemy import engine_from_config
-from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy.orm import configure_mappers
+from sqlalchemy import create_engine
+from sqlalchemy.orm import (
+    configure_mappers,
+    scoped_session,
+    sessionmaker
+)
+from sqlalchemy.pool import StaticPool
 import zope.sqlalchemy
 from zope.sqlalchemy import ZopeTransactionExtension
 
@@ -17,7 +21,12 @@ DBSession = scoped_session(
 
 
 def get_engine(settings, prefix='sqlalchemy.'):
-    return engine_from_config(settings, prefix)
+    engine = create_engine(
+        settings['sqlalchemy.url'],
+        connect_args={'check_same_thread': False},
+        poolclass=StaticPool
+    )
+    return engine
 
 
 def get_session_factory(engine):
